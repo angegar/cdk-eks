@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`My CDKTF Application Unit testing using snapshots should be valid 1`] = `
+"{
+  \\"provider\\": {
+    \\"aws\\": [
+      {
+        \\"profile\\": \\"manomano-env\\",
+        \\"region\\": \\"eu-west-3\\"
+      }
+    ]
+  },
+  \\"resource\\": {
+    \\"aws_iam_role\\": {
+      \\"eks-cluster-role\\": {
+        \\"assume_role_policy\\": \\"{\\\\\\"Version\\\\\\":\\\\\\"2012-10-17\\\\\\",\\\\\\"Statement\\\\\\":[{\\\\\\"Effect\\\\\\":\\\\\\"Allow\\\\\\",\\\\\\"Principal\\\\\\":{\\\\\\"Service\\\\\\":\\\\\\"eks.amazonaws.com\\\\\\"},\\\\\\"Action\\\\\\":\\\\\\"sts:AssumeRole\\\\\\"}]}\\",
+        \\"inline_policy\\": [
+          {
+            \\"name\\": \\"AmazonEKSClusterCloudWatchMetricsPolicy\\",
+            \\"policy\\": \\"{\\\\\\"Version\\\\\\":\\\\\\"2012-10-17\\\\\\",\\\\\\"Statement\\\\\\":[{\\\\\\"Action\\\\\\":[\\\\\\"cloudwatch:PutMetricData\\\\\\"],\\\\\\"Resource\\\\\\":\\\\\\"*\\\\\\",\\\\\\"Effect\\\\\\":\\\\\\"Allow\\\\\\"}]}\\"
+          }
+        ],
+        \\"managed_policy_arns\\": [
+          \\"arn:aws:iam::aws:policy/AmazonEKSClusterPolicy\\",
+          \\"arn:aws:iam::aws:policy/AmazonEKSVPCResourceController\\"
+        ],
+        \\"name\\": \\"role-eks-cluster\\"
+      }
+    }
+  },
+  \\"terraform\\": {
+    \\"backend\\": {
+      \\"s3\\": {
+        \\"bucket\\": \\"mm-terraform-remote-states-global\\",
+        \\"dynamodb_table\\": \\"tf-states-lock-table\\",
+        \\"encrypt\\": true,
+        \\"key\\": \\"env/infra/test-infra-global.tfstate\\",
+        \\"profile\\": \\"manomano-support\\",
+        \\"region\\": \\"eu-west-1\\"
+      }
+    },
+    \\"required_providers\\": {
+      \\"aws\\": {
+        \\"source\\": \\"aws\\",
+        \\"version\\": \\"4.15.1\\"
+      }
+    }
+  }
+}"
+`;
