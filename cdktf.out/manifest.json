@@ -1,0 +1,13 @@
+{
+  "version": "0.11.0",
+  "stacks": {
+    "sbx-laurentgil": {
+      "name": "sbx-laurentgil",
+      "constructPath": "sbx-laurentgil",
+      "workingDirectory": "stacks/sbx-laurentgil",
+      "synthesizedStackPath": "stacks/sbx-laurentgil/cdk.tf.json",
+      "annotations": [],
+      "dependencies": []
+    }
+  }
+}

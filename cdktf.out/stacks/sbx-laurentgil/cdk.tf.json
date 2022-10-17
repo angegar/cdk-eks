@@ -1,0 +1,240 @@
+{
+  "//": {
+    "metadata": {
+      "backend": "s3",
+      "stackName": "sbx-laurentgil",
+      "version": "0.11.0"
+    },
+    "outputs": {
+    }
+  },
+  "data": {
+    "aws_subnets": {
+      "subnets": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/subnets",
+            "uniqueId": "subnets"
+          }
+        },
+        "filter": [
+          {
+            "name": "tag:Name",
+            "values": [
+              "sub.app.a.sbx.0",
+              "sub.app.b.sbx.1"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "provider": {
+    "aws": [
+      {
+        "profile": "manomano-sbx",
+        "region": "eu-west-3"
+      }
+    ]
+  },
+  "resource": {
+    "aws_acm_certificate": {
+      "pe-demomanomanotech-cert": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/pe-demo.manomano.tech-cert",
+            "uniqueId": "pe-demomanomanotech-cert"
+          }
+        },
+        "domain_name": "*.pe-demo.manomano.tech",
+        "validation_method": "DNS"
+      }
+    },
+    "aws_acm_certificate_validation": {
+      "pe-demomanomanotech-validation": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/pe-demo.manomano.tech-validation",
+            "uniqueId": "pe-demomanomanotech-validation"
+          }
+        },
+        "certificate_arn": "${aws_acm_certificate.pe-demomanomanotech-cert.arn}",
+        "validation_record_fqdns": [
+          "${aws_route53_record.dns-record-0.fqdn}"
+        ]
+      }
+    },
+    "aws_eks_cluster": {
+      "eks-cluster": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/eks-cluster",
+            "uniqueId": "eks-cluster"
+          }
+        },
+        "enabled_cluster_log_types": [
+          "api",
+          "audit",
+          "authenticator",
+          "controllerManager",
+          "scheduler"
+        ],
+        "name": "sbx-laurentgil",
+        "role_arn": "${aws_iam_role.eks-cluster-role.arn}",
+        "version": "1.23",
+        "vpc_config": {
+          "subnet_ids": "${data.aws_subnets.subnets.ids}"
+        }
+      }
+    },
+    "aws_eks_node_group": {
+      "cluster-node-group-default": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/cluster-node-group-default",
+            "uniqueId": "cluster-node-group-default"
+          }
+        },
+        "ami_type": "BOTTLEROCKET_ARM_64",
+        "capacity_type": "ON_DEMAND",
+        "cluster_name": "sbx-laurentgil",
+        "disk_size": 20,
+        "instance_types": [
+          "m6g.xlarge"
+        ],
+        "node_group_name": "sbx-laurentgil-default",
+        "node_role_arn": "${aws_iam_role.ec2-pods-execution-role.arn}",
+        "scaling_config": {
+          "desired_size": 3,
+          "max_size": 3,
+          "min_size": 1
+        },
+        "subnet_ids": "${data.aws_subnets.subnets.ids}",
+        "version": "1.23"
+      },
+      "cluster-node-group-intel": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/cluster-node-group-intel",
+            "uniqueId": "cluster-node-group-intel"
+          }
+        },
+        "ami_type": "BOTTLEROCKET_x86_64",
+        "capacity_type": "ON_DEMAND",
+        "cluster_name": "sbx-laurentgil",
+        "disk_size": 20,
+        "instance_types": [
+          "t3.medium"
+        ],
+        "node_group_name": "sbx-laurentgil-intel",
+        "node_role_arn": "${aws_iam_role.ec2-pods-execution-role.arn}",
+        "scaling_config": {
+          "desired_size": 1,
+          "max_size": 3,
+          "min_size": 1
+        },
+        "subnet_ids": "${data.aws_subnets.subnets.ids}",
+        "taint": [
+          {
+            "effect": "NO_SCHEDULE",
+            "key": "arch",
+            "value": "amd64"
+          }
+        ],
+        "version": "1.23"
+      }
+    },
+    "aws_iam_role": {
+      "ec2-pods-execution-role": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/ec2-pods-execution-role",
+            "uniqueId": "ec2-pods-execution-role"
+          }
+        },
+        "assume_role_policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+        "inline_policy": [
+          {
+            "name": "STSAllowPolicy",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Resource\":\"*\"},{\"Effect\":\"Allow\",\"Action\":\"route53:*\",\"Resource\":\"*\"}]}"
+          }
+        ],
+        "managed_policy_arns": [
+          "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+          "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+          "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+          "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+          "arn:aws:iam::aws:policy/AmazonRoute53DomainsFullAccess"
+        ],
+        "name": "role-pods-laurentgil"
+      },
+      "eks-cluster-role": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/eks-cluster-role",
+            "uniqueId": "eks-cluster-role"
+          }
+        },
+        "assume_role_policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"eks.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+        "inline_policy": [
+          {
+            "name": "AmazonEKSClusterCloudWatchMetricsPolicy",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"cloudwatch:PutMetricData\"],\"Resource\":\"*\",\"Effect\":\"Allow\"}]}"
+          }
+        ],
+        "managed_policy_arns": [
+          "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+          "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+        ],
+        "name": "role-eks-cluster-laurentgil"
+      }
+    },
+    "aws_route53_record": {
+      "dns-record-0": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/dns-record-0",
+            "uniqueId": "dns-record-0"
+          }
+        },
+        "name": "${tolist(aws_acm_certificate.pe-demomanomanotech-cert.domain_validation_options)[0][\"resource_record_name\"]}",
+        "records": [
+          "${tolist(aws_acm_certificate.pe-demomanomanotech-cert.domain_validation_options)[0][\"resource_record_value\"]}"
+        ],
+        "ttl": 60,
+        "type": "${tolist(aws_acm_certificate.pe-demomanomanotech-cert.domain_validation_options)[0][\"resource_record_type\"]}",
+        "zone_id": "${aws_route53_zone.pe-demomanomanotech.id}"
+      }
+    },
+    "aws_route53_zone": {
+      "pe-demomanomanotech": {
+        "//": {
+          "metadata": {
+            "path": "sbx-laurentgil/pe-demo.manomano.tech",
+            "uniqueId": "pe-demomanomanotech"
+          }
+        },
+        "comment": "Hosted zone owned by the platform experts for their demo environment",
+        "name": "pe-demo.manomano.tech"
+      }
+    }
+  },
+  "terraform": {
+    "backend": {
+      "s3": {
+        "bucket": "mm-terraform-remote-states-eu-west-3",
+        "dynamodb_table": "tf-states-lock-table",
+        "encrypt": true,
+        "key": "sbx/infra/laurentgil-infra-eu-west-3.tfstate",
+        "profile": "manomano-support",
+        "region": "eu-west-3"
+      }
+    },
+    "required_providers": {
+      "aws": {
+        "source": "aws",
+        "version": "4.15.1"
+      }
+    }
+  }
+}
